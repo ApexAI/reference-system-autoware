@@ -11,11 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+#ifndef REFERENCE_SYSTEM_AUTOWARE__NODE__PROCESSING_HPP_
+#define REFERENCE_SYSTEM_AUTOWARE__NODE__PROCESSING_HPP_
 #pragma once
 
 #include <chrono>
 #include <string>
+#include <utility>
 
 #include "rclcpp/rclcpp.hpp"
 #include "reference_system_autoware/number_cruncher.hpp"
@@ -34,7 +36,7 @@ struct ProcessingSettings
 class Processing : public rclcpp::Node
 {
 public:
-  Processing(const ProcessingSettings & settings)
+  explicit Processing(const ProcessingSettings & settings)
   : Node(settings.node_name),
     number_crunch_time_(settings.number_crunch_time)
   {
@@ -74,3 +76,5 @@ private:
   std::chrono::nanoseconds number_crunch_time_;
 };
 }  // namespace node
+
+#endif  // REFERENCE_SYSTEM_AUTOWARE__NODE__PROCESSING_HPP_

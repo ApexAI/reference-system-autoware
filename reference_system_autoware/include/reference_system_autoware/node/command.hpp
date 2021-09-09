@@ -11,7 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+#ifndef REFERENCE_SYSTEM_AUTOWARE__NODE__COMMAND_HPP_
+#define REFERENCE_SYSTEM_AUTOWARE__NODE__COMMAND_HPP_
 #pragma once
 
 #include <chrono>
@@ -31,7 +32,7 @@ struct CommandSettings
 class Command : public rclcpp::Node
 {
 public:
-  Command(const CommandSettings & settings)
+  explicit Command(const CommandSettings & settings)
   : Node(settings.node_name)
   {
     subscription_ = this->create_subscription<message_t>(
@@ -52,14 +53,17 @@ private:
 
     const int64_t accumulated_latency_in_ns =
       input_accumulated_latency + timestamp_in_ns - input_timestamp;
-    
+
     RCLCPP_WARN_STREAM(this->get_logger(), "Received message statistics:");
     RCLCPP_WARN_STREAM(this->get_logger(), "  current timestamp in ns:   " << timestamp_in_ns);
     RCLCPP_WARN_STREAM(this->get_logger(), "  message timestamp in ns:   " << input_timestamp);
-    RCLCPP_WARN_STREAM(this->get_logger(), "  accumulated latency in ns: " << accumulated_latency_in_ns);
+    RCLCPP_WARN_STREAM(
+      this->get_logger(), "  accumulated latency in ns: " << accumulated_latency_in_ns);
   }
 
 private:
   subscription_t subscription_;
 };
 }  // namespace node
+
+#endif  // REFERENCE_SYSTEM_AUTOWARE__NODE__COMMAND_HPP_
