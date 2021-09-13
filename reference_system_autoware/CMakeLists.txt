@@ -30,23 +30,47 @@ ament_auto_add_executable(autoware_default_multithreaded
 )
 
 if(${BUILD_TESTING})
-  # run test psrecord to generate KPIs
-  # arguments for script are as follows:
-  # 1. executable name
-  # 2. path to save log data
-  # 3. path to save plot
-  # 4. duration to run test
-  #  add_custom_command(TARGET autoware_default_singlethreaded
-  #    POST_BUILD
-  #    COMMAND
-  #      ${CMAKE_CURRENT_SOURCE_DIR}/test/generate_graph.sh
-  #      autoware_default_singlethreaded
-  #      ${CMAKE_CURRENT_SOURCE_DIR}/results/cpu_mem_usage_results.txt
-  #      ${CMAKE_CURRENT_SOURCE_DIR}/results/plot.png
-  #      5
-  #    ARG
-  #    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  #    COMMENT "Run psrecord for specified target")
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
+  find_package(ros_testing REQUIRED)
+
+  # run target for 10 seconds
+  function(test_reference_system_autoware_5s target)
+    set(TEST_EXECUTABLE ${CMAKE_CURRENT_BINARY_DIR}/${target})
+    set(TEST_EXECUTABLE_NAME ${target}_${rmw_implementation})
+    set(TIMEOUT 10)
+    set(RMW_IMPLEMENTATION ${rmw_implementation})
+
+    # replaces all @var@ and ${var} within input file
+    configure_file(
+      test/test_${PROJECT_NAME}.py
+      test_${PROJECT_NAME}_${rmw_implementation}.py
+      @ONLY
+    )
+
+    add_ros_test(
+      ${CMAKE_CURRENT_BINARY_DIR}/test_${PROJECT_NAME}_${rmw_implementation}.py
+      TIMEOUT 10 # seconds
+    )
+
+    if(TARGET ${target})
+      ament_target_dependencies(${target}
+        "rclcpp" "reference_interfaces")
+    endif()
+  endfunction()
+
+  # get available rmw implementations
+  find_package(rmw_implementation_cmake REQUIRED)
+  get_available_rmw_implementations(rmws_available)
+
+  # loop over each rmw implmentation
+  foreach(rmw_implementation ${rmws_available})
+    find_package("${rmw_implementation}" REQUIRED)
+
+    # add each exe to test
+    test_reference_system_autoware_5s(autoware_default_multithreaded)
+  endforeach()
 endif()
 
 ament_auto_package(
